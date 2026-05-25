@@ -242,6 +242,92 @@
               ]
             }
           }
+        },
+        {
+          "name": "Crear Cliente (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Lucia\",\n  \"apellidos\": \"Torres\",\n  \"documento\": \"87654321\",\n  \"telefono\": \"988777666\",\n  \"email\": \"lucia.torres@correo.com\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  const id = json.id;",
+                  "  if (id) pm.collectionVariables.set('clienteId', id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar Cliente (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes/{{clienteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes",
+                "{{clienteId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Lucia\",\n  \"apellidos\": \"Torres Actualizada\",\n  \"documento\": \"87654321\",\n  \"telefono\": \"988777000\",\n  \"email\": \"lucia.torres@correo.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar Cliente (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes/{{clienteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes",
+                "{{clienteId}}"
+              ]
+            }
+          }
         }
       ]
     },
@@ -279,6 +365,92 @@
           "name": "Buscar Tipo de Habitacion por ID",
           "request": {
             "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tipos-habitacion/{{tipoHabitacionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tipos-habitacion",
+                "{{tipoHabitacionId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear Tipo de Habitacion (ADMINISTRADOR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tipos-habitacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tipos-habitacion"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Suite Ejecutiva\",\n  \"descripcion\": \"Habitacion amplia para viajes de negocio\",\n  \"precioBase\": 280.0,\n  \"capacidad\": 2\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  const id = json.id;",
+                  "  if (id) pm.collectionVariables.set('tipoHabitacionId', id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar Tipo de Habitacion (ADMINISTRADOR)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tipos-habitacion/{{tipoHabitacionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tipos-habitacion",
+                "{{tipoHabitacionId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Suite Ejecutiva\",\n  \"descripcion\": \"Habitacion amplia con escritorio y vista exterior\",\n  \"precioBase\": 300.0,\n  \"capacidad\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar Tipo de Habitacion (ADMINISTRADOR)",
+          "request": {
+            "method": "DELETE",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/tipos-habitacion/{{tipoHabitacionId}}",
@@ -342,6 +514,92 @@
               ]
             }
           }
+        },
+        {
+          "name": "Crear Habitacion (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/habitaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "habitaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero\": \"301\",\n  \"tipoHabitacionId\": {{tipoHabitacionId}},\n  \"estado\": \"DISPONIBLE\",\n  \"piso\": 3\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  const id = json.id;",
+                  "  if (id) pm.collectionVariables.set('habitacionId', id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar Habitacion (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/habitaciones/{{habitacionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "habitaciones",
+                "{{habitacionId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero\": \"301\",\n  \"tipoHabitacionId\": {{tipoHabitacionId}},\n  \"estado\": \"OCUPADA\",\n  \"piso\": 3\n}"
+            }
+          }
+        },
+        {
+          "name": "Enviar Habitacion a Mantenimiento (ADMINISTRADOR)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/habitaciones/{{habitacionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "habitaciones",
+                "{{habitacionId}}"
+              ]
+            }
+          }
         }
       ]
     },
@@ -379,6 +637,92 @@
           "name": "Buscar Personal por ID",
           "request": {
             "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/personal/{{personalId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "personal",
+                "{{personalId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear Personal (ADMINISTRADOR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/personal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "personal"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Mario\",\n  \"apellidos\": \"Vargas\",\n  \"rol\": \"CAJERO\",\n  \"telefono\": \"977666555\",\n  \"email\": \"mario.vargas@hotel.com\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  const id = json.id;",
+                  "  if (id) pm.collectionVariables.set('personalId', id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar Personal (ADMINISTRADOR)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/personal/{{personalId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "personal",
+                "{{personalId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Mario\",\n  \"apellidos\": \"Vargas Actualizado\",\n  \"rol\": \"CAJERO\",\n  \"telefono\": \"977666000\",\n  \"email\": \"mario.vargas@hotel.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar Personal (ADMINISTRADOR)",
+          "request": {
+            "method": "DELETE",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/personal/{{personalId}}",
@@ -442,6 +786,92 @@
               ]
             }
           }
+        },
+        {
+          "name": "Crear Pago (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pagos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pagos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metodo\": \"TARJETA\",\n  \"monto\": 560.0,\n  \"fechaPago\": \"2026-05-25T10:00:00\",\n  \"referencia\": \"PAGO-POSTMAN-001\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  const id = json.id;",
+                  "  if (id) pm.collectionVariables.set('pagoId', id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar Pago (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pagos/{{pagoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pagos",
+                "{{pagoId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metodo\": \"TARJETA\",\n  \"monto\": 600.0,\n  \"fechaPago\": \"2026-05-25T10:30:00\",\n  \"referencia\": \"PAGO-POSTMAN-001\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar Pago (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pagos/{{pagoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pagos",
+                "{{pagoId}}"
+              ]
+            }
+          }
         }
       ]
     },
@@ -479,6 +909,92 @@
           "name": "Buscar Caracteristica por ID",
           "request": {
             "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/caracteristicas/{{caracteristicaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "caracteristicas",
+                "{{caracteristicaId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear Caracteristica (ADMINISTRADOR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/caracteristicas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "caracteristicas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Jacuzzi\",\n  \"descripcion\": \"Banera de hidromasaje privada\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  const id = json.id;",
+                  "  if (id) pm.collectionVariables.set('caracteristicaId', id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar Caracteristica (ADMINISTRADOR)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/caracteristicas/{{caracteristicaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "caracteristicas",
+                "{{caracteristicaId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Jacuzzi\",\n  \"descripcion\": \"Banera de hidromasaje privada renovada\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar Caracteristica (ADMINISTRADOR)",
+          "request": {
+            "method": "DELETE",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/caracteristicas/{{caracteristicaId}}",
@@ -542,6 +1058,92 @@
               ]
             }
           }
+        },
+        {
+          "name": "Crear Calificacion (ADMINISTRADOR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/calificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "calificaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tipoHabitacionId\": {{tipoHabitacionId}},\n  \"puntaje\": 5,\n  \"comentario\": \"Excelente habitacion\",\n  \"fecha\": \"2026-05-25\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  const id = json.id;",
+                  "  if (id) pm.collectionVariables.set('calificacionId', id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar Calificacion (ADMINISTRADOR)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/calificaciones/{{calificacionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "calificaciones",
+                "{{calificacionId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tipoHabitacionId\": {{tipoHabitacionId}},\n  \"puntaje\": 4,\n  \"comentario\": \"Muy buena habitacion\",\n  \"fecha\": \"2026-05-25\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar Calificacion (ADMINISTRADOR)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/calificaciones/{{calificacionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "calificaciones",
+                "{{calificacionId}}"
+              ]
+            }
+          }
         }
       ]
     },
@@ -592,6 +1194,92 @@
               ]
             }
           }
+        },
+        {
+          "name": "Crear Cupon (ADMINISTRADOR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cupones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cupones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"POSTMAN10\",\n  \"descuentoPorcentaje\": 10.0,\n  \"tipoHabitacionId\": {{tipoHabitacionId}},\n  \"fechaInicio\": \"2026-05-25\",\n  \"fechaFin\": \"2026-06-25\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  const id = json.id;",
+                  "  if (id) pm.collectionVariables.set('cuponId', id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar Cupon (ADMINISTRADOR)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cupones/{{cuponId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cupones",
+                "{{cuponId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"POSTMAN10\",\n  \"descuentoPorcentaje\": 15.0,\n  \"tipoHabitacionId\": {{tipoHabitacionId}},\n  \"fechaInicio\": \"2026-05-25\",\n  \"fechaFin\": \"2026-06-30\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar Cupon (ADMINISTRADOR)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cupones/{{cuponId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cupones",
+                "{{cuponId}}"
+              ]
+            }
+          }
         }
       ]
     },
@@ -629,6 +1317,92 @@
           "name": "Buscar Relacion por ID",
           "request": {
             "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/habitacion-caracteristicas/{{habitacionCaracteristicaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "habitacion-caracteristicas",
+                "{{habitacionCaracteristicaId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear Relacion (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/habitacion-caracteristicas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "habitacion-caracteristicas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoHabitacionId\": {{tipoHabitacionId}},\n  \"caracteristicaId\": {{caracteristicaId}}\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  const id = json.id;",
+                  "  if (id) pm.collectionVariables.set('habitacionCaracteristicaId', id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar Relacion (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/habitacion-caracteristicas/{{habitacionCaracteristicaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "habitacion-caracteristicas",
+                "{{habitacionCaracteristicaId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoHabitacionId\": {{tipoHabitacionId}},\n  \"caracteristicaId\": {{caracteristicaId}}\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar Relacion (ADMINISTRADOR)",
+          "request": {
+            "method": "DELETE",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/habitacion-caracteristicas/{{habitacionCaracteristicaId}}",
@@ -717,7 +1491,22 @@
                 "reservas"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  const id = json.reserva && json.reserva.id;",
+                  "  if (id) pm.collectionVariables.set('reservaId', id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "Mis Reservas (CLIENTE)",
@@ -760,6 +1549,51 @@
                 "api",
                 "reservas",
                 "mis-reservas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Reserva Operativa (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservas/{{reservaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservas",
+                "{{reservaId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"habitacionId\": {{habitacionId}},\n  \"pagoId\": {{pagoId}},\n  \"personalId\": {{personalId}},\n  \"fechaIngreso\": \"2026-05-10\",\n  \"fechaSalida\": \"2026-05-13\",\n  \"estado\": \"CONFIRMADA\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Cancelar Reserva Operativa (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservas/{{reservaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservas",
+                "{{reservaId}}"
               ]
             }
           }
