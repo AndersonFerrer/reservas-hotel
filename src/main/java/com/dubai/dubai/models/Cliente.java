@@ -1,12 +1,32 @@
 package com.dubai.dubai.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "clientes")
 public class Cliente {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String nombres;
+
+    @Column(nullable = false)
     private String apellidos;
+
+    @Column(nullable = false, unique = true)
     private String documento;
+
     private String telefono;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @JsonIgnore
+    @OneToOne(mappedBy = "cliente")
+    private Usuario usuario;
 
     public Cliente() {
     }
@@ -66,5 +86,13 @@ public class Cliente {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 }

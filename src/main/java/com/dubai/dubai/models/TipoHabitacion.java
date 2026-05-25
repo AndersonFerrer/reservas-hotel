@@ -1,11 +1,38 @@
 package com.dubai.dubai.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "tipos_habitacion")
 public class TipoHabitacion {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String nombre;
+
+    @Column(nullable = false)
     private String descripcion;
+
+    @Column(nullable = false)
     private Double precioBase;
+
+    @Column(nullable = false)
     private Integer capacidad;
+
+    @ManyToMany
+    @JoinTable(
+            name = "tipo_habitacion_caracteristicas",
+            joinColumns = @JoinColumn(name = "tipo_habitacion_id"),
+            inverseJoinColumns = @JoinColumn(name = "caracteristica_id")
+    )
+    @JsonIgnoreProperties("tiposHabitacion")
+    private Set<Caracteristica> caracteristicas = new HashSet<>();
 
     public TipoHabitacion() {
     }
@@ -56,5 +83,13 @@ public class TipoHabitacion {
 
     public void setCapacidad(Integer capacidad) {
         this.capacidad = capacidad;
+    }
+
+    public Set<Caracteristica> getCaracteristicas() {
+        return caracteristicas;
+    }
+
+    public void setCaracteristicas(Set<Caracteristica> caracteristicas) {
+        this.caracteristicas = caracteristicas;
     }
 }

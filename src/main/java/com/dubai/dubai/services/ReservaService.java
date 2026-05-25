@@ -2,43 +2,93 @@ package com.dubai.dubai.services;
 
 import com.dubai.dubai.models.EstadoReserva;
 import com.dubai.dubai.models.Reserva;
+import com.dubai.dubai.models.Usuario;
+import com.dubai.dubai.repositories.ClienteRepository;
+import com.dubai.dubai.repositories.HabitacionRepository;
+import com.dubai.dubai.repositories.PagoRepository;
+import com.dubai.dubai.repositories.PersonalRepository;
+import com.dubai.dubai.repositories.ReservaRepository;
+import com.dubai.dubai.repositories.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class ReservaService {
 
-    private final List<Reserva> reservas = new ArrayList<>(List.of(
-            new Reserva(1L, 1L, 1L, 1L, 1L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3), EstadoReserva.CONFIRMADA),
-            new Reserva(2L, 2L, 2L, 2L, 2L, LocalDate.now().plusDays(4), LocalDate.now().plusDays(5), EstadoReserva.PENDIENTE)
-    ));
+    private final ReservaRepository reservaRepository;
+    private final ClienteRepository clienteRepository;
+    private final HabitacionRepository habitacionRepository;
+    private final PagoRepository pagoRepository;
+    private final PersonalRepository personalRepository;
+    private final UsuarioRepository usuarioRepository;
+
+    public ReservaService(ReservaRepository reservaRepository,
+                          ClienteRepository clienteRepository,
+                          HabitacionRepository habitacionRepository,
+                          PagoRepository pagoRepository,
+                          PersonalRepository personalRepository,
+                          UsuarioRepository usuarioRepository) {
+        this.reservaRepository = reservaRepository;
+        this.clienteRepository = clienteRepository;
+        this.habitacionRepository = habitacionRepository;
+        this.pagoRepository = pagoRepository;
+        this.personalRepository = personalRepository;
+        this.usuarioRepository = usuarioRepository;
+    }
 
     public List<Reserva> listar() {
-        return reservas;
+        return reservaRepository.findAll();
     }
 
     public Reserva buscarPorId(Long id) {
-        return reservas.stream()
-                .filter(reserva -> reserva.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+        return reservaRepository.findById(id).orElse(null);
     }
 
     public Reserva crear(Reserva reserva) {
         validarReserva(reserva);
+        reserva.setCliente(clienteRepository.findById(reserva.getClienteId())
+                .orElseThrow(() -> new IllegalArgumentException("El cliente indicado no existe")));
+        return guardarReservaValidada(reserva);
+    }
+
+    public List<Reserva> listarPorClienteAutenticado(String email) {
+        Usuario usuario = obtenerUsuarioCliente(email);
+        return reservaRepository.findByCliente_Id(usuario.getCliente().getId());
+    }
+
+    public Reserva crearParaClienteAutenticado(Reserva reserva, String email) {
+        Usuario usuario = obtenerUsuarioCliente(email);
+        if (reserva != null) {
+            reserva.setCliente(usuario.getCliente());
+        }
+        validarReserva(reserva);
+        return guardarReservaValidada(reserva);
+    }
+
+    private Reserva guardarReservaValidada(Reserva reserva) {
+        reserva.setHabitacion(habitacionRepository.findById(reserva.getHabitacionId())
+                .orElseThrow(() -> new IllegalArgumentException("La habitacion indicada no existe")));
+        reserva.setPago(pagoRepository.findById(reserva.getPagoId())
+                .orElseThrow(() -> new IllegalArgumentException("El pago indicado no existe")));
+        reserva.setPersonal(personalRepository.findById(reserva.getPersonalId())
+                .orElseThrow(() -> new IllegalArgumentException("El personal indicado no existe")));
 
         if (reserva.getEstado() == null) {
             reserva.setEstado(EstadoReserva.PENDIENTE);
         }
 
-        long nuevoId = reservas.stream().mapToLong(Reserva::getId).max().orElse(0L) + 1;
-        reserva.setId(nuevoId);
-        reservas.add(reserva);
-        return reserva;
+        return reservaRepository.save(reserva);
+    }
+
+    private Usuario obtenerUsuarioCliente(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("El usuario autenticado no existe"));
+        if (usuario.getCliente() == null) {
+            throw new IllegalArgumentException("El usuario autenticado no tiene perfil de cliente");
+        }
+        return usuario;
     }
 
     public long calcularNoches(Reserva reserva) {

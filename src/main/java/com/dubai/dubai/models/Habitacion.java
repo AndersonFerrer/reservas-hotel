@@ -1,10 +1,28 @@
 package com.dubai.dubai.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "habitaciones")
 public class Habitacion {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, unique = true)
     private String numero;
-    private Long tipoHabitacionId;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "tipo_habitacion_id", nullable = false)
+    @JsonIgnoreProperties({"caracteristicas"})
+    private TipoHabitacion tipoHabitacion;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private EstadoHabitacion estado;
+
+    @Column(nullable = false)
     private Integer piso;
 
     public Habitacion() {
@@ -13,7 +31,7 @@ public class Habitacion {
     public Habitacion(Long id, String numero, Long tipoHabitacionId, EstadoHabitacion estado, Integer piso) {
         this.id = id;
         this.numero = numero;
-        this.tipoHabitacionId = tipoHabitacionId;
+        setTipoHabitacionId(tipoHabitacionId);
         this.estado = estado;
         this.piso = piso;
     }
@@ -34,12 +52,26 @@ public class Habitacion {
         this.numero = numero;
     }
 
+    public TipoHabitacion getTipoHabitacion() {
+        return tipoHabitacion;
+    }
+
+    public void setTipoHabitacion(TipoHabitacion tipoHabitacion) {
+        this.tipoHabitacion = tipoHabitacion;
+    }
+
     public Long getTipoHabitacionId() {
-        return tipoHabitacionId;
+        return tipoHabitacion != null ? tipoHabitacion.getId() : null;
     }
 
     public void setTipoHabitacionId(Long tipoHabitacionId) {
-        this.tipoHabitacionId = tipoHabitacionId;
+        if (tipoHabitacionId == null) {
+            this.tipoHabitacion = null;
+            return;
+        }
+        TipoHabitacion tipo = new TipoHabitacion();
+        tipo.setId(tipoHabitacionId);
+        this.tipoHabitacion = tipo;
     }
 
     public EstadoHabitacion getEstado() {

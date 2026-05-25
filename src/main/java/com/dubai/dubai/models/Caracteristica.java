@@ -1,9 +1,27 @@
 package com.dubai.dubai.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "caracteristicas")
 public class Caracteristica {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String nombre;
+
+    @Column(nullable = false)
     private String descripcion;
+
+    @JsonIgnore
+    @ManyToMany(mappedBy = "caracteristicas")
+    private Set<TipoHabitacion> tiposHabitacion = new HashSet<>();
 
     public Caracteristica() {
     }
@@ -36,5 +54,13 @@ public class Caracteristica {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public Set<TipoHabitacion> getTiposHabitacion() {
+        return tiposHabitacion;
+    }
+
+    public void setTiposHabitacion(Set<TipoHabitacion> tiposHabitacion) {
+        this.tiposHabitacion = tiposHabitacion;
     }
 }

@@ -1,12 +1,27 @@
 package com.dubai.dubai.models;
 
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "pagos")
 public class Pago {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private MetodoPago metodo;
+
+    @Column(nullable = false)
     private Double monto;
+
+    @Column(nullable = false)
     private LocalDateTime fechaPago;
+
+    @Column(nullable = false, unique = true)
     private String referencia;
 
     public Pago() {
