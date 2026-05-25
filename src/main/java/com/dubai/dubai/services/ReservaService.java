@@ -53,6 +53,37 @@ public class ReservaService {
         return guardarReservaValidada(reserva);
     }
 
+    public Reserva actualizar(Long id, Reserva datos) {
+        Reserva existente = reservaRepository.findById(id).orElse(null);
+        if (existente == null) {
+            return null;
+        }
+
+        validarReserva(datos);
+        existente.setCliente(clienteRepository.findById(datos.getClienteId())
+                .orElseThrow(() -> new IllegalArgumentException("El cliente indicado no existe")));
+        existente.setHabitacion(habitacionRepository.findById(datos.getHabitacionId())
+                .orElseThrow(() -> new IllegalArgumentException("La habitacion indicada no existe")));
+        existente.setPago(pagoRepository.findById(datos.getPagoId())
+                .orElseThrow(() -> new IllegalArgumentException("El pago indicado no existe")));
+        existente.setPersonal(personalRepository.findById(datos.getPersonalId())
+                .orElseThrow(() -> new IllegalArgumentException("El personal indicado no existe")));
+        existente.setFechaIngreso(datos.getFechaIngreso());
+        existente.setFechaSalida(datos.getFechaSalida());
+        existente.setEstado(datos.getEstado() != null ? datos.getEstado() : EstadoReserva.PENDIENTE);
+        return reservaRepository.save(existente);
+    }
+
+    public boolean eliminar(Long id) {
+        Reserva reserva = reservaRepository.findById(id).orElse(null);
+        if (reserva == null) {
+            return false;
+        }
+        reserva.setEstado(EstadoReserva.CANCELADA);
+        reservaRepository.save(reserva);
+        return true;
+    }
+
     public List<Reserva> listarPorClienteAutenticado(String email) {
         Usuario usuario = obtenerUsuarioCliente(email);
         return reservaRepository.findByCliente_Id(usuario.getCliente().getId());

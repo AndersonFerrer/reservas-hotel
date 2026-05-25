@@ -2,10 +2,13 @@ package com.dubai.dubai.controllers;
 
 import com.dubai.dubai.models.TipoHabitacion;
 import com.dubai.dubai.services.TipoHabitacionService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tipos-habitacion")
@@ -26,5 +29,39 @@ public class TipoHabitacionController {
     public ResponseEntity<TipoHabitacion> buscarPorId(@PathVariable Long id) {
         TipoHabitacion tipo = tipoHabitacionService.buscarPorId(id);
         return tipo != null ? ResponseEntity.ok(tipo) : ResponseEntity.notFound().build();
+    }
+
+    @PostMapping
+    public ResponseEntity<?> crear(@RequestBody TipoHabitacion tipoHabitacion) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(tipoHabitacionService.crear(tipoHabitacion));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(error(ex.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody TipoHabitacion tipoHabitacion) {
+        try {
+            TipoHabitacion actualizada = tipoHabitacionService.actualizar(id, tipoHabitacion);
+            return actualizada != null ? ResponseEntity.ok(actualizada) : ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(error(ex.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
+        try {
+            return tipoHabitacionService.eliminar(id) ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(error(ex.getMessage()));
+        }
+    }
+
+    private Map<String, String> error(String mensaje) {
+        Map<String, String> error = new LinkedHashMap<>();
+        error.put("error", mensaje);
+        return error;
     }
 }

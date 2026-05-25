@@ -40,6 +40,31 @@ public class CalificacionService {
         return calificacionRepository.save(calificacion);
     }
 
+    public Calificacion actualizar(Long id, Calificacion datos) {
+        Calificacion existente = calificacionRepository.findById(id).orElse(null);
+        if (existente == null) {
+            return null;
+        }
+
+        validarCalificacion(datos);
+        existente.setCliente(clienteRepository.findById(datos.getClienteId())
+                .orElseThrow(() -> new IllegalArgumentException("El cliente indicado no existe")));
+        existente.setTipoHabitacion(tipoHabitacionRepository.findById(datos.getTipoHabitacionId())
+                .orElseThrow(() -> new IllegalArgumentException("El tipo de habitacion indicado no existe")));
+        existente.setPuntaje(datos.getPuntaje());
+        existente.setComentario(datos.getComentario());
+        existente.setFecha(datos.getFecha());
+        return calificacionRepository.save(existente);
+    }
+
+    public boolean eliminar(Long id) {
+        if (!calificacionRepository.existsById(id)) {
+            return false;
+        }
+        calificacionRepository.deleteById(id);
+        return true;
+    }
+
     private void validarCalificacion(Calificacion calificacion) {
         if (calificacion == null) {
             throw new IllegalArgumentException("La calificacion es obligatoria");
@@ -49,6 +74,12 @@ public class CalificacionService {
         }
         if (calificacion.getPuntaje() == null || calificacion.getPuntaje() < 1 || calificacion.getPuntaje() > 5) {
             throw new IllegalArgumentException("El puntaje debe estar entre 1 y 5");
+        }
+        if (calificacion.getComentario() == null || calificacion.getComentario().isBlank()) {
+            throw new IllegalArgumentException("El comentario es obligatorio");
+        }
+        if (calificacion.getFecha() == null) {
+            throw new IllegalArgumentException("La fecha de la calificacion es obligatoria");
         }
     }
 }

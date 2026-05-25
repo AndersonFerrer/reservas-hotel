@@ -252,52 +252,81 @@ Authorization: Bearer <token>
 
 - `GET /api/clientes` -> lista de clientes
 - `GET /api/clientes/{id}` -> cliente por id (`404` si no existe)
+- `POST /api/clientes` -> crea cliente sin usuario de acceso
+- `PUT /api/clientes/{id}` -> actualiza datos del cliente
+- `DELETE /api/clientes/{id}` -> elimina si no tiene usuario, reservas o calificaciones
 
 ### 5.2 Tipos de habitacion
 
 - `GET /api/tipos-habitacion` -> lista de tipos
 - `GET /api/tipos-habitacion/{id}` -> tipo por id (`404` si no existe)
+- `POST /api/tipos-habitacion` -> crea tipo de habitacion
+- `PUT /api/tipos-habitacion/{id}` -> actualiza tipo de habitacion
+- `DELETE /api/tipos-habitacion/{id}` -> elimina si no tiene datos asociados
 
 ### 5.3 Habitaciones
 
 - `GET /api/habitaciones` -> lista de habitaciones
 - `GET /api/habitaciones/{id}` -> habitacion por id (`404` si no existe)
+- `POST /api/habitaciones` -> crea habitacion
+- `PUT /api/habitaciones/{id}` -> actualiza habitacion
+- `DELETE /api/habitaciones/{id}` -> cambia estado a `MANTENIMIENTO`
 
 ### 5.4 Personal
 
 - `GET /api/personal` -> lista de personal
 - `GET /api/personal/{id}` -> personal por id (`404` si no existe)
+- `POST /api/personal` -> crea personal sin usuario de acceso
+- `PUT /api/personal/{id}` -> actualiza datos del personal
+- `DELETE /api/personal/{id}` -> elimina si no tiene usuario o reservas
 
 ### 5.5 Pagos
 
 - `GET /api/pagos` -> lista de pagos
 - `GET /api/pagos/{id}` -> pago por id (`404` si no existe)
+- `POST /api/pagos` -> crea pago
+- `PUT /api/pagos/{id}` -> actualiza pago
+- `DELETE /api/pagos/{id}` -> elimina si no tiene reservas
 
 ### 5.6 Caracteristicas
 
 - `GET /api/caracteristicas` -> lista de caracteristicas
 - `GET /api/caracteristicas/{id}` -> caracteristica por id (`404` si no existe)
+- `POST /api/caracteristicas` -> crea caracteristica
+- `PUT /api/caracteristicas/{id}` -> actualiza caracteristica
+- `DELETE /api/caracteristicas/{id}` -> elimina si no esta asociada a tipos de habitacion
 
 ### 5.7 Calificaciones
 
 - `GET /api/calificaciones` -> lista de calificaciones
 - `GET /api/calificaciones/{id}` -> calificacion por id (`404` si no existe)
+- `POST /api/calificaciones` -> crea calificacion
+- `PUT /api/calificaciones/{id}` -> actualiza calificacion
+- `DELETE /api/calificaciones/{id}` -> elimina calificacion
 
 ### 5.8 Cupones
 
 - `GET /api/cupones` -> lista de cupones
 - `GET /api/cupones/{id}` -> cupon por id (`404` si no existe)
+- `POST /api/cupones` -> crea cupon
+- `PUT /api/cupones/{id}` -> actualiza cupon
+- `DELETE /api/cupones/{id}` -> elimina cupon
 
 ### 5.9 Relacion Habitacion-Caracteristicas
 
 - `GET /api/habitacion-caracteristicas` -> lista de relaciones
 - `GET /api/habitacion-caracteristicas/{id}` -> relacion por id (`404` si no existe)
+- `POST /api/habitacion-caracteristicas` -> asocia caracteristica a tipo de habitacion
+- `PUT /api/habitacion-caracteristicas/{id}` -> actualiza asociacion
+- `DELETE /api/habitacion-caracteristicas/{id}` -> elimina asociacion
 
 ### 5.10 Reservas
 
 - `GET /api/reservas` -> lista de reservas
 - `GET /api/reservas/{id}` -> reserva por id (`404` si no existe)
 - `POST /api/reservas` -> crea reserva, valida datos y calcula noches
+- `PUT /api/reservas/{id}` -> actualiza reserva
+- `DELETE /api/reservas/{id}` -> cambia estado a `CANCELADA`
 - `GET /api/reservas/mis-reservas` -> lista reservas del cliente autenticado
 - `POST /api/reservas/mis-reservas` -> crea reserva para el cliente autenticado
 
@@ -354,7 +383,7 @@ Resumen de permisos:
 | Rol | Acceso principal |
 | --- | --- |
 | `ADMINISTRADOR` | Todos los endpoints protegidos |
-| `CAJERO` | `GET /api/clientes/**`, `GET /api/pagos/**`, `GET /api/reservas/**`, `POST /api/reservas`, catalogo y relaciones |
+| `CAJERO` | CRUD operativo en clientes, pagos y reservas; crear/actualizar habitaciones y relaciones; lectura de catalogo |
 | `CLIENTE` | Catalogo, calificaciones, `GET /api/reservas/mis-reservas`, `POST /api/reservas/mis-reservas` |
 
 Para crear una reserva propia como cliente:
@@ -371,7 +400,7 @@ Para crear una reserva propia como cliente:
 
 El cliente no envia `clienteId`; se toma desde el token.
 
-Ver la matriz completa en `changes/005-permisos-por-roles.md`.
+Ver la matriz base en `changes/005-permisos-por-roles.md` y el detalle del CRUD administrativo en `changes/006-crud-administrativo-hotel.md`.
 
 ## 7. Reglas Actuales (Servicios)
 
@@ -386,6 +415,9 @@ Ver la matriz completa en `changes/005-permisos-por-roles.md`.
 - `fechaIngreso` y `fechaSalida` obligatorias.
 - `fechaSalida` debe ser posterior a `fechaIngreso`.
 - Se calcula cantidad de noches al crear reserva.
+- El borrado de habitaciones cambia el estado a `MANTENIMIENTO`.
+- El borrado de reservas cambia el estado a `CANCELADA`.
+- Los catalogos sin estado se eliminan fisicamente solo cuando no tienen dependencias.
 
 ## 8. Verificacion
 

@@ -57,6 +57,21 @@ public class ReservaController {
         }
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody Reserva reserva) {
+        try {
+            Reserva actualizada = reservaService.actualizar(id, reserva);
+            return actualizada != null ? ResponseEntity.ok(actualizada) : ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(error(ex.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
+        return reservaService.eliminar(id) ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
     private ResponseEntity<Map<String, Object>> respuestaReservaCreada(Reserva creada) {
         long noches = reservaService.calcularNoches(creada);
 
