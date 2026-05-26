@@ -20,11 +20,11 @@ public class CaracteristicaService {
     }
 
     public List<Caracteristica> listar() {
-        return caracteristicaRepository.findAll();
+        return caracteristicaRepository.listarConJpql();
     }
 
     public Caracteristica buscarPorId(Long id) {
-        return caracteristicaRepository.findById(id).orElse(null);
+        return caracteristicaRepository.buscarPorIdConJpql(id).orElse(null);
     }
 
     public Caracteristica crear(Caracteristica caracteristica) {

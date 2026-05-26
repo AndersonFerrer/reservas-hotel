@@ -32,11 +32,11 @@ public class TipoHabitacionService {
     }
 
     public List<TipoHabitacion> listar() {
-        return tipoHabitacionRepository.findAll();
+        return tipoHabitacionRepository.listarConJpql();
     }
 
     public TipoHabitacion buscarPorId(Long id) {
-        return tipoHabitacionRepository.findById(id).orElse(null);
+        return tipoHabitacionRepository.buscarPorIdConJpql(id).orElse(null);
     }
 
     public TipoHabitacion crear(TipoHabitacion tipoHabitacion) {

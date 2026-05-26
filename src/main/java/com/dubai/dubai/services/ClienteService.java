@@ -30,11 +30,11 @@ public class ClienteService {
     }
 
     public List<Cliente> listar() {
-        return clienteRepository.findAll();
+        return clienteRepository.listarConJpql();
     }
 
     public Cliente buscarPorId(Long id) {
-        return clienteRepository.findById(id).orElse(null);
+        return clienteRepository.buscarPorIdConJpql(id).orElse(null);
     }
 
     public Cliente crear(Cliente cliente) {
