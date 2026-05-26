@@ -1,9 +1,12 @@
 package com.dubai.dubai.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "reservas")
@@ -23,10 +26,6 @@ public class Reserva {
     private Habitacion habitacion;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "pago_id", nullable = false)
-    private Pago pago;
-
-    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "personal_id", nullable = false)
     @JsonIgnoreProperties("usuario")
     private Personal personal;
@@ -41,6 +40,10 @@ public class Reserva {
     @Column(nullable = false)
     private EstadoReserva estado;
 
+    @OneToMany(mappedBy = "reserva", fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("reserva")
+    private List<Pago> pagos = new ArrayList<>();
+
     public Reserva() {
     }
 
@@ -49,7 +52,6 @@ public class Reserva {
         this.id = id;
         setClienteId(clienteId);
         setHabitacionId(habitacionId);
-        setPagoId(pagoId);
         setPersonalId(personalId);
         this.fechaIngreso = fechaIngreso;
         this.fechaSalida = fechaSalida;
@@ -108,26 +110,13 @@ public class Reserva {
         this.habitacion = nuevaHabitacion;
     }
 
-    public Pago getPago() {
-        return pago;
-    }
-
-    public void setPago(Pago pago) {
-        this.pago = pago;
-    }
-
+    @JsonIgnore
     public Long getPagoId() {
-        return pago != null ? pago.getId() : null;
+        return null;
     }
 
+    @JsonIgnore
     public void setPagoId(Long pagoId) {
-        if (pagoId == null) {
-            this.pago = null;
-            return;
-        }
-        Pago nuevoPago = new Pago();
-        nuevoPago.setId(pagoId);
-        this.pago = nuevoPago;
     }
 
     public Personal getPersonal() {
@@ -174,5 +163,13 @@ public class Reserva {
 
     public void setEstado(EstadoReserva estado) {
         this.estado = estado;
+    }
+
+    public List<Pago> getPagos() {
+        return pagos;
+    }
+
+    public void setPagos(List<Pago> pagos) {
+        this.pagos = pagos;
     }
 }

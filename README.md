@@ -49,6 +49,7 @@ src/test/java/com/dubai/dubai/
 - `RolPersonal`: `ADMINISTRADOR`, `CAJERO`
 - `MetodoPago`: `EFECTIVO`, `YAPE`, `PLIN`, `TRANSFERENCIA`, `TARJETA`
 - `EstadoReserva`: `PENDIENTE`, `CONFIRMADA`, `CANCELADA`, `FINALIZADA`
+- `EstadoPago`: `PENDIENTE`, `PAGADO`, `ANULADO`, `REEMBOLSADO`
 - `RolUsuario`: `CLIENTE`, `ADMINISTRADOR`, `CAJERO`
 - `TipoUsuario`: `CLIENTE`, `PERSONAL`
 
@@ -92,17 +93,21 @@ erDiagram
 
     Pago {
         Long id PK
+        Long reservaId FK
         MetodoPago metodo
         Double monto
         LocalDateTime fechaPago
         String referencia
+        EstadoPago estado
+        String observacion
+        String moneda
+        LocalDateTime fechaRegistro
     }
 
     Reserva {
         Long id PK
         Long clienteId FK
         Long habitacionId FK
-        Long pagoId FK
         Long personalId FK
         LocalDate fechaIngreso
         LocalDate fechaSalida
@@ -146,7 +151,7 @@ erDiagram
     TipoHabitacion ||--o{ Cupon : "ofrece"
     TipoHabitacion ||--o{ HabitacionCaracteristica : "posee"
     Habitacion ||--o{ Reserva : "reservada"
-    Pago ||--o{ Reserva : "registra"
+    Reserva ||--o{ Pago : "registra"
     Personal ||--o{ Reserva : "atiende"
     Caracteristica ||--o{ HabitacionCaracteristica : "asigna"
 ```
@@ -286,7 +291,7 @@ Authorization: Bearer <token>
 - `GET /api/pagos/{id}` -> pago por id (`404` si no existe)
 - `POST /api/pagos` -> crea pago
 - `PUT /api/pagos/{id}` -> actualiza pago
-- `DELETE /api/pagos/{id}` -> elimina si no tiene reservas
+- `DELETE /api/pagos/{id}` -> anula el pago si esta asociado a una reserva
 
 ### 5.6 Caracteristicas
 
@@ -324,11 +329,14 @@ Authorization: Bearer <token>
 
 - `GET /api/reservas` -> lista de reservas
 - `GET /api/reservas/{id}` -> reserva por id (`404` si no existe)
-- `POST /api/reservas` -> crea reserva, valida datos y calcula noches
+- `GET /api/reservas/{id}/pagos` -> lista pagos asociados a la reserva
+- `POST /api/reservas` -> crea reserva con pago pendiente
+- `POST /api/reservas/con-pago` -> crea reserva y pago en una sola operacion
 - `PUT /api/reservas/{id}` -> actualiza reserva
 - `DELETE /api/reservas/{id}` -> cambia estado a `CANCELADA`
 - `GET /api/reservas/mis-reservas` -> lista reservas del cliente autenticado
-- `POST /api/reservas/mis-reservas` -> crea reserva para el cliente autenticado
+- `POST /api/reservas/mis-reservas` -> crea reserva para el cliente autenticado con pago pendiente
+- `POST /api/reservas/mis-reservas/con-pago` -> crea reserva y pago para el cliente autenticado
 
 #### Request ejemplo `POST /api/reservas`
 
@@ -336,10 +344,32 @@ Authorization: Bearer <token>
 {
   "clienteId": 1,
   "habitacionId": 1,
-  "pagoId": 1,
   "personalId": 1,
   "fechaIngreso": "2026-05-10",
   "fechaSalida": "2026-05-12"
+}
+```
+
+#### Request ejemplo `POST /api/reservas/con-pago`
+
+```json
+{
+  "reserva": {
+    "clienteId": 1,
+    "habitacionId": 1,
+    "personalId": 1,
+    "fechaIngreso": "2026-05-10",
+    "fechaSalida": "2026-05-12"
+  },
+  "pago": {
+    "metodo": "TARJETA",
+    "monto": 560.0,
+    "fechaPago": "2026-05-10T10:00:00",
+    "referencia": "POS-001",
+    "estado": "PAGADO",
+    "moneda": "PEN",
+    "observacion": "Pago POS"
+  }
 }
 ```
 
@@ -353,7 +383,6 @@ Authorization: Bearer <token>
     "id": 3,
     "clienteId": 1,
     "habitacionId": 1,
-    "pagoId": 1,
     "personalId": 1,
     "fechaIngreso": "2026-05-10",
     "fechaSalida": "2026-05-12",
@@ -391,7 +420,6 @@ Para crear una reserva propia como cliente:
 ```json
 {
   "habitacionId": 1,
-  "pagoId": 1,
   "personalId": 1,
   "fechaIngreso": "2026-05-10",
   "fechaSalida": "2026-05-12"
@@ -410,13 +438,17 @@ Ver la matriz base en `changes/005-permisos-por-roles.md` y el detalle del CRUD 
 - Las contrasenas se guardan con BCrypt.
 - `JWTAuthorizationFilter` protege todas las rutas excepto `/api/auth/**`.
 - `ReservaService` valida:
-- `clienteId`, `habitacionId`, `pagoId`, `personalId` obligatorios.
+- `clienteId`, `habitacionId`, `personalId` obligatorios.
 - Que las entidades relacionadas existan en base de datos.
 - `fechaIngreso` y `fechaSalida` obligatorias.
 - `fechaSalida` debe ser posterior a `fechaIngreso`.
 - Se calcula cantidad de noches al crear reserva.
+- Las reservas sin pago quedan en estado `PENDIENTE`.
+- Las reservas con pago `PAGADO` quedan en estado `CONFIRMADA`.
+- Los pagos se asocian a reservas mediante `reservaId`.
 - El borrado de habitaciones cambia el estado a `MANTENIMIENTO`.
 - El borrado de reservas cambia el estado a `CANCELADA`.
+- El borrado de pagos asociados cambia el estado a `ANULADO`.
 - Los catalogos sin estado se eliminan fisicamente solo cuando no tienen dependencias.
 
 ## 8. Verificacion

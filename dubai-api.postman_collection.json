@@ -809,21 +809,21 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"metodo\": \"TARJETA\",\n  \"monto\": 560.0,\n  \"fechaPago\": \"2026-05-25T10:00:00\",\n  \"referencia\": \"PAGO-POSTMAN-001\"\n}"
+              "raw": "{\n  \"reservaId\": {{reservaId}},\n  \"metodo\": \"TARJETA\",\n  \"monto\": 560.0,\n  \"fechaPago\": \"2026-05-25T10:00:00\",\n  \"referencia\": \"PAGO-POSTMAN-001\",\n  \"estado\": \"PAGADO\",\n  \"moneda\": \"PEN\",\n  \"observacion\": \"Pago registrado desde Postman\"\n}"
             }
           },
           "event": [
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
                   "if (pm.response.code === 201) {",
                   "  const json = pm.response.json();",
                   "  const id = json.id;",
                   "  if (id) pm.collectionVariables.set('pagoId', id);",
                   "}"
-                ],
-                "type": "text/javascript"
+                ]
               }
             }
           ]
@@ -851,7 +851,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"metodo\": \"TARJETA\",\n  \"monto\": 600.0,\n  \"fechaPago\": \"2026-05-25T10:30:00\",\n  \"referencia\": \"PAGO-POSTMAN-001\"\n}"
+              "raw": "{\n  \"reservaId\": {{reservaId}},\n  \"metodo\": \"TARJETA\",\n  \"monto\": 600.0,\n  \"fechaPago\": \"2026-05-25T10:30:00\",\n  \"referencia\": \"PAGO-POSTMAN-001\",\n  \"estado\": \"PAGADO\",\n  \"moneda\": \"PEN\",\n  \"observacion\": \"Pago actualizado desde Postman\"\n}"
             }
           }
         },
@@ -1468,6 +1468,25 @@
           }
         },
         {
+          "name": "Listar Pagos de Reserva (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservas/{{reservaId}}/pagos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservas",
+                "{{reservaId}}",
+                "pagos"
+              ]
+            }
+          }
+        },
+        {
           "name": "Crear Reserva Operativa (ADMINISTRADOR, CAJERO)",
           "request": {
             "method": "POST",
@@ -1479,7 +1498,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"habitacionId\": {{habitacionId}},\n  \"pagoId\": {{pagoId}},\n  \"personalId\": {{personalId}},\n  \"fechaIngreso\": \"2026-05-10\",\n  \"fechaSalida\": \"2026-05-12\"\n}"
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"habitacionId\": {{habitacionId}},\n  \"personalId\": {{personalId}},\n  \"fechaIngreso\": \"2026-05-10\",\n  \"fechaSalida\": \"2026-05-12\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/reservas",
@@ -1504,6 +1523,48 @@
                   "}"
                 ],
                 "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear Reserva Operativa con Pago (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservas/con-pago",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservas",
+                "con-pago"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reserva\": {\n    \"clienteId\": {{clienteId}},\n    \"habitacionId\": {{habitacionId}},\n    \"personalId\": {{personalId}},\n    \"fechaIngreso\": \"2026-05-10\",\n    \"fechaSalida\": \"2026-05-12\"\n  },\n  \"pago\": {\n    \"metodo\": \"TARJETA\",\n    \"monto\": 560.0,\n    \"fechaPago\": \"2026-05-25T10:00:00\",\n    \"referencia\": \"POS-POSTMAN-001\",\n    \"estado\": \"PAGADO\",\n    \"moneda\": \"PEN\",\n    \"observacion\": \"Pago POS incluido en la reserva\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  const id = json.reserva && json.reserva.id;",
+                  "  if (id) pm.collectionVariables.set('reservaId', id);",
+                  "}"
+                ]
               }
             }
           ]
@@ -1538,7 +1599,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"habitacionId\": {{habitacionId}},\n  \"pagoId\": {{pagoId}},\n  \"personalId\": {{personalId}},\n  \"fechaIngreso\": \"2026-05-10\",\n  \"fechaSalida\": \"2026-05-12\"\n}"
+              "raw": "{\n  \"habitacionId\": {{habitacionId}},\n  \"personalId\": {{personalId}},\n  \"fechaIngreso\": \"2026-05-10\",\n  \"fechaSalida\": \"2026-05-12\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/reservas/mis-reservas",
@@ -1552,6 +1613,49 @@
               ]
             }
           }
+        },
+        {
+          "name": "Crear Mi Reserva con Pago (CLIENTE)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservas/mis-reservas/con-pago",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservas",
+                "mis-reservas",
+                "con-pago"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reserva\": {\n    \"habitacionId\": {{habitacionId}},\n    \"personalId\": {{personalId}},\n    \"fechaIngreso\": \"2026-05-10\",\n    \"fechaSalida\": \"2026-05-12\"\n  },\n  \"pago\": {\n    \"metodo\": \"YAPE\",\n    \"monto\": 560.0,\n    \"fechaPago\": \"2026-05-25T10:00:00\",\n    \"referencia\": \"CLIENTE-POSTMAN-001\",\n    \"estado\": \"PENDIENTE\",\n    \"moneda\": \"PEN\",\n    \"observacion\": \"Pago pendiente de validacion\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  const id = json.reserva && json.reserva.id;",
+                  "  if (id) pm.collectionVariables.set('reservaId', id);",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Actualizar Reserva Operativa (ADMINISTRADOR, CAJERO)",
@@ -1576,7 +1680,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"habitacionId\": {{habitacionId}},\n  \"pagoId\": {{pagoId}},\n  \"personalId\": {{personalId}},\n  \"fechaIngreso\": \"2026-05-10\",\n  \"fechaSalida\": \"2026-05-13\",\n  \"estado\": \"CONFIRMADA\"\n}"
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"habitacionId\": {{habitacionId}},\n  \"personalId\": {{personalId}},\n  \"fechaIngreso\": \"2026-05-10\",\n  \"fechaSalida\": \"2026-05-13\",\n  \"estado\": \"CONFIRMADA\"\n}"
             }
           }
         },

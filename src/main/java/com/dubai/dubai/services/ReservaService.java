@@ -1,15 +1,18 @@
 package com.dubai.dubai.services;
 
+import com.dubai.dubai.dto.ReservaConPagoRequest;
+import com.dubai.dubai.models.EstadoPago;
 import com.dubai.dubai.models.EstadoReserva;
+import com.dubai.dubai.models.Pago;
 import com.dubai.dubai.models.Reserva;
 import com.dubai.dubai.models.Usuario;
 import com.dubai.dubai.repositories.ClienteRepository;
 import com.dubai.dubai.repositories.HabitacionRepository;
-import com.dubai.dubai.repositories.PagoRepository;
 import com.dubai.dubai.repositories.PersonalRepository;
 import com.dubai.dubai.repositories.ReservaRepository;
 import com.dubai.dubai.repositories.UsuarioRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -20,22 +23,22 @@ public class ReservaService {
     private final ReservaRepository reservaRepository;
     private final ClienteRepository clienteRepository;
     private final HabitacionRepository habitacionRepository;
-    private final PagoRepository pagoRepository;
     private final PersonalRepository personalRepository;
     private final UsuarioRepository usuarioRepository;
+    private final PagoService pagoService;
 
     public ReservaService(ReservaRepository reservaRepository,
                           ClienteRepository clienteRepository,
                           HabitacionRepository habitacionRepository,
-                          PagoRepository pagoRepository,
                           PersonalRepository personalRepository,
-                          UsuarioRepository usuarioRepository) {
+                          UsuarioRepository usuarioRepository,
+                          PagoService pagoService) {
         this.reservaRepository = reservaRepository;
         this.clienteRepository = clienteRepository;
         this.habitacionRepository = habitacionRepository;
-        this.pagoRepository = pagoRepository;
         this.personalRepository = personalRepository;
         this.usuarioRepository = usuarioRepository;
+        this.pagoService = pagoService;
     }
 
     public List<Reserva> listar() {
@@ -53,6 +56,15 @@ public class ReservaService {
         return guardarReservaValidada(reserva);
     }
 
+    @Transactional
+    public Reserva crearConPago(ReservaConPagoRequest request) {
+        validarReservaConPago(request);
+        Reserva reserva = crear(request.getReserva());
+        Pago pago = pagoService.crearParaReserva(request.getPago(), reserva);
+        actualizarEstadoPorPago(reserva, pago);
+        return reservaRepository.save(reserva);
+    }
+
     public Reserva actualizar(Long id, Reserva datos) {
         Reserva existente = reservaRepository.findById(id).orElse(null);
         if (existente == null) {
@@ -64,8 +76,6 @@ public class ReservaService {
                 .orElseThrow(() -> new IllegalArgumentException("El cliente indicado no existe")));
         existente.setHabitacion(habitacionRepository.findById(datos.getHabitacionId())
                 .orElseThrow(() -> new IllegalArgumentException("La habitacion indicada no existe")));
-        existente.setPago(pagoRepository.findById(datos.getPagoId())
-                .orElseThrow(() -> new IllegalArgumentException("El pago indicado no existe")));
         existente.setPersonal(personalRepository.findById(datos.getPersonalId())
                 .orElseThrow(() -> new IllegalArgumentException("El personal indicado no existe")));
         existente.setFechaIngreso(datos.getFechaIngreso());
@@ -98,11 +108,25 @@ public class ReservaService {
         return guardarReservaValidada(reserva);
     }
 
+    @Transactional
+    public Reserva crearParaClienteAutenticadoConPago(ReservaConPagoRequest request, String email) {
+        validarReservaConPago(request);
+        Usuario usuario = obtenerUsuarioCliente(email);
+        request.getReserva().setCliente(usuario.getCliente());
+        validarReserva(request.getReserva());
+        Reserva reserva = guardarReservaValidada(request.getReserva());
+        Pago pago = pagoService.crearParaReserva(request.getPago(), reserva);
+        actualizarEstadoPorPago(reserva, pago);
+        return reservaRepository.save(reserva);
+    }
+
+    public List<Pago> listarPagos(Long reservaId) {
+        return pagoService.listarPorReserva(reservaId);
+    }
+
     private Reserva guardarReservaValidada(Reserva reserva) {
         reserva.setHabitacion(habitacionRepository.findById(reserva.getHabitacionId())
                 .orElseThrow(() -> new IllegalArgumentException("La habitacion indicada no existe")));
-        reserva.setPago(pagoRepository.findById(reserva.getPagoId())
-                .orElseThrow(() -> new IllegalArgumentException("El pago indicado no existe")));
         reserva.setPersonal(personalRepository.findById(reserva.getPersonalId())
                 .orElseThrow(() -> new IllegalArgumentException("El personal indicado no existe")));
 
@@ -111,6 +135,26 @@ public class ReservaService {
         }
 
         return reservaRepository.save(reserva);
+    }
+
+    private void validarReservaConPago(ReservaConPagoRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("La solicitud de reserva con pago es obligatoria");
+        }
+        if (request.getReserva() == null) {
+            throw new IllegalArgumentException("La reserva es obligatoria");
+        }
+        if (request.getPago() == null) {
+            throw new IllegalArgumentException("El pago es obligatorio");
+        }
+    }
+
+    private void actualizarEstadoPorPago(Reserva reserva, Pago pago) {
+        if (pago.getEstado() == EstadoPago.PAGADO) {
+            reserva.setEstado(EstadoReserva.CONFIRMADA);
+        } else {
+            reserva.setEstado(EstadoReserva.PENDIENTE);
+        }
     }
 
     private Usuario obtenerUsuarioCliente(String email) {
@@ -133,8 +177,8 @@ public class ReservaService {
         if (reserva == null) {
             throw new IllegalArgumentException("La reserva es obligatoria");
         }
-        if (reserva.getClienteId() == null || reserva.getHabitacionId() == null || reserva.getPagoId() == null || reserva.getPersonalId() == null) {
-            throw new IllegalArgumentException("clienteId, habitacionId, pagoId y personalId son obligatorios");
+        if (reserva.getClienteId() == null || reserva.getHabitacionId() == null || reserva.getPersonalId() == null) {
+            throw new IllegalArgumentException("clienteId, habitacionId y personalId son obligatorios");
         }
         if (reserva.getFechaIngreso() == null || reserva.getFechaSalida() == null) {
             throw new IllegalArgumentException("Las fechas de ingreso y salida son obligatorias");

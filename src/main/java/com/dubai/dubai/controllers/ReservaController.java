@@ -1,5 +1,7 @@
 package com.dubai.dubai.controllers;
 
+import com.dubai.dubai.dto.ReservaConPagoRequest;
+import com.dubai.dubai.models.Pago;
 import com.dubai.dubai.models.Reserva;
 import com.dubai.dubai.services.ReservaService;
 import org.springframework.http.HttpStatus;
@@ -41,6 +43,36 @@ public class ReservaController {
         }
     }
 
+    @PostMapping("/mis-reservas/con-pago")
+    public ResponseEntity<?> crearMiReservaConPago(@RequestBody ReservaConPagoRequest request, Authentication authentication) {
+        try {
+            Reserva creada = reservaService.crearParaClienteAutenticadoConPago(request, authentication.getName());
+            return respuestaReservaCreadaConPago(creada);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(error(ex.getMessage()));
+        }
+    }
+
+    @PostMapping("/con-pago")
+    public ResponseEntity<?> crearConPago(@RequestBody ReservaConPagoRequest request) {
+        try {
+            Reserva creada = reservaService.crearConPago(request);
+            return respuestaReservaCreadaConPago(creada);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(error(ex.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}/pagos")
+    public ResponseEntity<?> listarPagos(@PathVariable Long id) {
+        try {
+            List<Pago> pagos = reservaService.listarPagos(id);
+            return ResponseEntity.ok(pagos);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Reserva> buscarPorId(@PathVariable Long id) {
         Reserva reserva = reservaService.buscarPorId(id);
@@ -79,6 +111,18 @@ public class ReservaController {
         response.put("mensaje", "Reserva creada correctamente");
         response.put("noches", noches);
         response.put("reserva", creada);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    private ResponseEntity<Map<String, Object>> respuestaReservaCreadaConPago(Reserva creada) {
+        long noches = reservaService.calcularNoches(creada);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("mensaje", "Reserva creada correctamente con pago");
+        response.put("noches", noches);
+        response.put("reserva", creada);
+        response.put("pagos", reservaService.listarPagos(creada.getId()));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
