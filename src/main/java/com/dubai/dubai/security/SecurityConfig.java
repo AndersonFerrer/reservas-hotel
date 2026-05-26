@@ -40,6 +40,7 @@ public class SecurityConfig {
                         })
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register/personal").hasRole("ADMINISTRADOR")
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reservas/mis-reservas").hasRole("CLIENTE")
                         .requestMatchers(HttpMethod.POST, "/api/reservas/mis-reservas").hasRole("CLIENTE")
