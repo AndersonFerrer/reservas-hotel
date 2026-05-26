@@ -1,24 +1,48 @@
-# INSTRUCCION - Segundo avance del backend Dubai
+# INSTRUCCION - Guion de exposicion del segundo avance
 
-Este documento resume lo nuevo integrado desde ayer, 24 de mayo de 2026, para explicar el avance en la exposicion: Spring Security, autenticacion con JWT, JPA con PostgreSQL, relaciones entre entidades y el nuevo flujo de reservas con pagos.
+Este documento esta ordenado para exponer el avance del backend Dubai de forma clara: primero el problema y la arquitectura, luego base de datos, seguridad, JWT, relaciones y finalmente el flujo de reservas con pagos.
 
-## 1. Resumen de lo nuevo
+## 1. Introduccion del avance
 
-En este avance el proyecto dejo de funcionar como una API simple y paso a tener una arquitectura mas completa:
+En este segundo avance el backend evoluciono a una API mas completa para gestion hotelera.
 
-- Se integro PostgreSQL como base de datos.
-- Se agrego Spring Data JPA para mapear clases Java a tablas.
-- Se crearon repositorios `JpaRepository` para consultar y guardar datos.
-- Se agrego Spring Security para proteger rutas.
-- Se implemento autenticacion con JWT.
-- Se agregaron roles: `CLIENTE`, `ADMINISTRADOR` y `CAJERO`.
-- Se centralizo el login con la entidad `Usuario`.
-- Se agregaron relaciones reales entre entidades como `Reserva`, `Cliente`, `Habitacion`, `Personal` y `Pago`.
-- En los ultimos cambios locales, las reservas ya pueden crearse sin pago o con pago incluido.
+Ahora el sistema:
 
-## 2. Dependencias agregadas
+- Guarda datos reales en PostgreSQL.
+- Usa JPA para mapear clases Java a tablas.
+- Tiene repositorios para consultar la base de datos.
+- Protege rutas con Spring Security.
+- Autentica usuarios con JWT.
+- Maneja roles: `CLIENTE`, `CAJERO` y `ADMINISTRADOR`.
+- Relaciona entidades como clientes, reservas, habitaciones, personal y pagos.
+- Permite crear reservas con pago pendiente o con pago incluido.
 
-Las dependencias principales estan en `pom.xml`.
+Idea para decir:
+
+> El objetivo fue pasar de una API basica a un backend mas realista, con persistencia, seguridad, roles y reglas de negocio.
+
+## 2. Arquitectura por capas
+
+El proyecto esta organizado por responsabilidades:
+
+| Capa | Funcion |
+| --- | --- |
+| `controllers` | Reciben las peticiones HTTP. |
+| `services` | Validan reglas de negocio. |
+| `repositories` | Consultan y guardan datos en PostgreSQL. |
+| `models` | Representan tablas y relaciones. |
+| `security` | Valida tokens y permisos. |
+| `dto` | Define cuerpos especiales para requests y responses. |
+
+Ejemplo de flujo:
+
+```text
+Cliente/Postman -> Controller -> Service -> Repository -> PostgreSQL
+```
+
+## 3. Dependencias principales
+
+Las integraciones se agregaron en `pom.xml`.
 
 ```xml
 <dependency>
@@ -34,7 +58,6 @@ Las dependencias principales estan en `pom.xml`.
 <dependency>
     <groupId>org.postgresql</groupId>
     <artifactId>postgresql</artifactId>
-    <scope>runtime</scope>
 </dependency>
 
 <dependency>
@@ -44,16 +67,16 @@ Las dependencias principales estan en `pom.xml`.
 </dependency>
 ```
 
-Que hace cada una:
+Resumen:
 
-- `spring-boot-starter-data-jpa`: permite usar entidades, relaciones y repositorios.
-- `spring-boot-starter-security`: permite proteger endpoints y manejar permisos.
-- `postgresql`: conecta Spring Boot con la base de datos PostgreSQL.
-- `jjwt-api`, `jjwt-impl`, `jjwt-jackson`: permiten crear, firmar y validar tokens JWT.
+- `data-jpa`: persistencia y repositorios.
+- `security`: autenticacion y autorizacion.
+- `postgresql`: conexion con la base de datos.
+- `jjwt`: creacion y validacion de JWT.
 
-## 3. Conexion a PostgreSQL
+## 4. PostgreSQL y configuracion
 
-La configuracion esta en `application.properties`.
+La conexion se configura en `application.properties`.
 
 ```properties
 spring.datasource.url=${DB_URL}
@@ -63,25 +86,21 @@ spring.datasource.driver-class-name=org.postgresql.Driver
 
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
 ```
 
-Explicacion corta:
+Puntos clave:
 
-- `spring.datasource.url`: ruta de conexion a PostgreSQL.
-- `spring.datasource.username`: usuario de la base de datos.
-- `spring.datasource.password`: clave de la base de datos.
-- `ddl-auto=update`: Hibernate actualiza las tablas segun las entidades.
-- `show-sql=true`: muestra las consultas SQL en consola.
-- `format_sql=true`: imprime las consultas SQL mas ordenadas.
+- Las credenciales vienen desde `.env`.
+- `ddl-auto=update` permite que Hibernate actualice las tablas segun las entidades.
+- `show-sql=true` muestra las consultas SQL en consola.
 
-Tambien se usa `.env` para no quemar credenciales directamente en el codigo.
+Idea para decir:
 
-## 4. JPA: entidades y tablas
+> Con esto la aplicacion ya no depende de datos en memoria; ahora trabaja con una base PostgreSQL.
 
-JPA permite convertir una clase Java en una tabla de la base de datos.
+## 5. JPA: entidades como tablas
 
-Ejemplo en `Reserva`:
+JPA convierte clases Java en tablas.
 
 ```java
 @Entity
@@ -93,14 +112,14 @@ public class Reserva {
 }
 ```
 
-Que significa:
+Explicacion rapida:
 
-- `@Entity`: esta clase sera una tabla.
-- `@Table(name = "reservas")`: la tabla se llamara `reservas`.
-- `@Id`: campo que sera clave primaria.
-- `@GeneratedValue(strategy = GenerationType.IDENTITY)`: PostgreSQL genera el ID automaticamente.
+- `@Entity`: la clase sera una tabla.
+- `@Table`: define el nombre de la tabla.
+- `@Id`: clave primaria.
+- `@GeneratedValue`: el ID se genera automaticamente.
 
-Ejemplo de enum guardado como texto:
+Tambien se usan enums como texto:
 
 ```java
 @Enumerated(EnumType.STRING)
@@ -108,24 +127,23 @@ Ejemplo de enum guardado como texto:
 private EstadoReserva estado;
 ```
 
-Esto guarda valores como `PENDIENTE`, `CONFIRMADA` o `CANCELADA` como texto, no como numeros. Es mejor para leer la base de datos.
+Esto guarda valores como `PENDIENTE`, `CONFIRMADA` o `CANCELADA`, lo cual es mas legible en la base de datos.
 
-## 5. Relaciones entre entidades
+## 6. Relaciones entre entidades
 
-Las relaciones principales son:
+Relaciones principales del sistema:
 
-| Entidad | Relacion | Explicacion |
+| Relacion | Tipo | Explicacion |
 | --- | --- | --- |
-| `Usuario` - `Cliente` | `@OneToOne` | Un usuario puede estar asociado a un cliente. |
-| `Usuario` - `Personal` | `@OneToOne` | Un usuario tambien puede representar personal del hotel. |
-| `Reserva` - `Cliente` | `@ManyToOne` | Un cliente puede tener muchas reservas. |
-| `Reserva` - `Habitacion` | `@ManyToOne` | Una habitacion puede aparecer en muchas reservas. |
-| `Reserva` - `Personal` | `@ManyToOne` | Un personal puede registrar muchas reservas. |
-| `Reserva` - `Pago` | `@OneToMany` | Una reserva puede tener uno o varios pagos. |
-| `Pago` - `Reserva` | `@ManyToOne` | Cada pago pertenece a una reserva. |
-| `TipoHabitacion` - `Caracteristica` | `@ManyToMany` | Un tipo de habitacion puede tener varias caracteristicas. |
+| `Usuario` - `Cliente` | `OneToOne` | Un usuario puede tener perfil de cliente. |
+| `Usuario` - `Personal` | `OneToOne` | Un usuario tambien puede ser personal del hotel. |
+| `Reserva` - `Cliente` | `ManyToOne` | Un cliente puede tener muchas reservas. |
+| `Reserva` - `Habitacion` | `ManyToOne` | Una habitacion puede aparecer en varias reservas. |
+| `Reserva` - `Personal` | `ManyToOne` | Un personal registra muchas reservas. |
+| `Reserva` - `Pago` | `OneToMany` | Una reserva puede tener varios pagos. |
+| `Pago` - `Reserva` | `ManyToOne` | Cada pago pertenece a una reserva. |
 
-Ejemplo de muchos a uno en `Reserva`:
+Ejemplo:
 
 ```java
 @ManyToOne(fetch = FetchType.EAGER)
@@ -135,23 +153,15 @@ private Cliente cliente;
 
 Explicacion:
 
-- Muchas reservas pueden pertenecer a un mismo cliente.
-- `cliente_id` sera la columna foreign key en la tabla `reservas`.
-- `nullable = false` obliga a que una reserva tenga cliente.
+- Muchas reservas pueden pertenecer a un cliente.
+- `cliente_id` sera la llave foranea en la tabla `reservas`.
 
-Ejemplo de uno a muchos entre reserva y pagos:
+Relacion de pagos:
 
 ```java
 @OneToMany(mappedBy = "reserva", fetch = FetchType.EAGER)
 private List<Pago> pagos = new ArrayList<>();
 ```
-
-Explicacion:
-
-- Una reserva puede tener varios pagos.
-- `mappedBy = "reserva"` indica que la relacion se controla desde la entidad `Pago`.
-
-Y en `Pago`:
 
 ```java
 @ManyToOne(fetch = FetchType.EAGER)
@@ -159,13 +169,13 @@ Y en `Pago`:
 private Reserva reserva;
 ```
 
-Esto crea la columna `reserva_id` en la tabla `pagos`.
+Idea para decir:
 
-## 6. Repositorios con Spring Data JPA
+> Antes una reserva dependia directamente de un pago. Ahora una reserva puede existir sin pago y los pagos se asocian despues mediante `reserva_id`.
 
-Los repositorios permiten hacer consultas sin escribir SQL manual.
+## 7. Repositorios JPA
 
-Ejemplo:
+Los repositorios evitan escribir SQL manual para operaciones comunes.
 
 ```java
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
@@ -174,84 +184,36 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 }
 ```
 
-Explicacion:
+Metodos heredados de `JpaRepository`:
 
-- `JpaRepository<Usuario, Long>` ya trae metodos como `findAll`, `findById`, `save` y `deleteById`.
-- `findByEmail` busca un usuario por correo.
-- `existsByEmail` verifica si ya existe un correo.
+- `findAll()`: listar.
+- `findById(id)`: buscar por ID.
+- `save(entity)`: crear o actualizar.
+- `deleteById(id)`: eliminar.
 
-Ejemplo usado en pagos:
+Ejemplo de pagos:
 
 ```java
 public interface PagoRepository extends JpaRepository<Pago, Long> {
     Optional<Pago> findByReferencia(String referencia);
     List<Pago> findByReserva_Id(Long reservaId);
-    boolean existsByReserva_Id(Long reservaId);
 }
 ```
 
-Explicacion:
+Spring interpreta el nombre del metodo y genera la consulta automaticamente.
 
-- `findByReferencia`: busca un pago por su codigo o referencia.
-- `findByReserva_Id`: lista pagos asociados a una reserva.
-- `existsByReserva_Id`: verifica si una reserva ya tiene pagos asociados.
+## 8. Autenticacion unificada
 
-Spring Data entiende el nombre del metodo y arma la consulta automaticamente.
+Se agrego la entidad `Usuario` para centralizar credenciales.
 
-## 7. Spring Security
+El sistema permite:
 
-La seguridad se configura en `SecurityConfig`.
+- Registrar cliente.
+- Registrar personal.
+- Iniciar sesion desde una sola ruta.
+- Devolver un JWT para usar rutas protegidas.
 
-```java
-@Bean
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    return http
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/reservas/mis-reservas").hasRole("CLIENTE")
-                    .requestMatchers(HttpMethod.POST, "/api/reservas/con-pago").hasAnyRole("ADMINISTRADOR", "CAJERO")
-                    .anyRequest().hasRole("ADMINISTRADOR")
-            )
-            .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
-            .build();
-}
-```
-
-Explicacion:
-
-- `csrf().disable()`: se desactiva porque la API usa tokens, no sesiones web tradicionales.
-- `SessionCreationPolicy.STATELESS`: el servidor no guarda sesion; cada request debe traer token.
-- `/api/auth/**`: rutas publicas para registro y login.
-- `hasRole("CLIENTE")`: solo clientes pueden entrar.
-- `hasAnyRole("ADMINISTRADOR", "CAJERO")`: permite mas de un rol.
-- `addFilterBefore(...)`: ejecuta el filtro JWT antes del filtro normal de login de Spring.
-
-Tambien se agrego un encoder de contrasenas:
-
-```java
-@Bean
-public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-}
-```
-
-Esto permite guardar contrasenas cifradas con BCrypt.
-
-## 8. Autenticacion con JWT
-
-El flujo es:
-
-1. El usuario se registra o inicia sesion.
-2. El backend valida email y password.
-3. Si son correctos, se genera un token JWT.
-4. El frontend o Postman envia ese token en cada request protegida.
-5. El filtro JWT valida el token y carga el rol del usuario.
-
-### Registro y login
-
-Rutas principales:
+Rutas:
 
 ```http
 POST /api/auth/register/cliente
@@ -259,61 +221,72 @@ POST /api/auth/register/personal
 POST /api/auth/login
 ```
 
-Ejemplo de login:
-
-```json
-{
-  "email": "cliente@correo.com",
-  "password": "123456"
-}
-```
-
-Respuesta esperada:
-
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiJ9...",
-  "tipo": "Bearer",
-  "usuarioId": 1,
-  "email": "cliente@correo.com",
-  "rol": "CLIENTE",
-  "tipoUsuario": "CLIENTE"
-}
-```
-
-### Como se genera el token
-
-Fragmento de `JwtService`:
+En el registro de cliente:
 
 ```java
-public String generarToken(Usuario usuario) {
-    Map<String, Object> claims = new HashMap<>();
-    claims.put("rol", usuario.getRol().name());
-    claims.put("tipoUsuario", usuario.getTipoUsuario().name());
-    claims.put("usuarioId", usuario.getId());
-
-    return Jwts.builder()
-            .claims(claims)
-            .subject(usuario.getEmail())
-            .issuedAt(new Date())
-            .expiration(expiracion)
-            .signWith(getSigningKey())
-            .compact();
-}
+usuario.setEmail(request.getEmail());
+usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+usuario.setRol(RolUsuario.CLIENTE);
+usuario.setTipoUsuario(TipoUsuario.CLIENTE);
+usuario.setCliente(cliente);
 ```
 
 Explicacion:
 
-- `claims`: datos extra dentro del token.
-- `subject`: se usa el email como identificador principal.
-- `issuedAt`: fecha de emision.
-- `expiration`: fecha de vencimiento.
-- `signWith`: firma el token con una clave secreta.
-- `compact`: convierte todo a un String JWT.
+- Se guarda la clave cifrada con BCrypt.
+- Se asigna el rol `CLIENTE`.
+- Se relaciona el usuario con su perfil de cliente.
 
-### Como se valida el token
+En login:
 
-Fragmento:
+```java
+if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
+    throw new IllegalArgumentException("Credenciales invalidas");
+}
+```
+
+Esto compara la clave ingresada con la clave cifrada.
+
+## 9. JWT
+
+JWT permite autenticar sin guardar sesion en el servidor.
+
+Flujo:
+
+1. El usuario inicia sesion.
+2. El backend genera un token.
+3. El cliente guarda el token.
+4. En cada ruta protegida envia:
+
+```http
+Authorization: Bearer <token>
+```
+
+Generacion del token:
+
+```java
+claims.put("rol", usuario.getRol().name());
+claims.put("tipoUsuario", usuario.getTipoUsuario().name());
+claims.put("usuarioId", usuario.getId());
+
+return Jwts.builder()
+        .claims(claims)
+        .subject(usuario.getEmail())
+        .issuedAt(ahora)
+        .expiration(expiracion)
+        .signWith(getSigningKey())
+        .compact();
+```
+
+El token contiene:
+
+- Email del usuario.
+- Rol.
+- Tipo de usuario.
+- ID del usuario.
+- Fecha de vencimiento.
+
+Validacion:
 
 ```java
 public boolean tokenValido(String token, String email) {
@@ -322,15 +295,43 @@ public boolean tokenValido(String token, String email) {
 }
 ```
 
+## 10. Spring Security y permisos
+
+La seguridad se configura en `SecurityConfig`.
+
+```java
+return http
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/reservas/mis-reservas").hasRole("CLIENTE")
+                .requestMatchers(HttpMethod.POST, "/api/reservas/con-pago").hasAnyRole("ADMINISTRADOR", "CAJERO")
+                .anyRequest().hasRole("ADMINISTRADOR")
+        )
+        .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+        .build();
+```
+
 Explicacion:
 
-- Obtiene el email guardado en el token.
-- Compara que sea el mismo email del usuario.
-- Verifica que el token no este vencido.
+- `/api/auth/**` es publico.
+- Las demas rutas requieren token.
+- `CLIENTE` puede gestionar sus propias reservas.
+- `CAJERO` gestiona operacion interna.
+- `ADMINISTRADOR` tiene acceso completo.
 
-## 9. Filtro JWT
+Tabla resumida:
 
-El filtro `JWTAuthorizationFilter` revisa cada request protegida.
+| Rol | Permisos principales |
+| --- | --- |
+| `CLIENTE` | Ver catalogo y crear/ver sus reservas. |
+| `CAJERO` | Gestionar clientes, reservas y pagos. |
+| `ADMINISTRADOR` | Control completo de la API. |
+
+## 11. Filtro JWT
+
+El filtro lee el token antes de que la peticion llegue al controlador.
 
 ```java
 String authorizationHeader = request.getHeader("Authorization");
@@ -343,78 +344,35 @@ if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
 String token = authorizationHeader.substring("Bearer ".length());
 ```
 
-Explicacion:
-
-- Lee el header `Authorization`.
-- Verifica que empiece con `Bearer`.
-- Extrae el token quitando la palabra `Bearer`.
-
-Luego autentica al usuario:
+Luego carga el rol en Spring Security:
 
 ```java
 List<SimpleGrantedAuthority> authorities =
         List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name()));
 
-UsernamePasswordAuthenticationToken authentication =
-        new UsernamePasswordAuthenticationToken(usuario.getEmail(), null, authorities);
-
 SecurityContextHolder.getContext().setAuthentication(authentication);
 ```
 
-Explicacion:
+Idea para decir:
 
-- Convierte el rol del usuario en autoridad de Spring Security.
-- Guarda la autenticacion en el contexto de seguridad.
-- Desde ese momento Spring sabe quien hizo la request y que rol tiene.
+> El filtro convierte el token en una autenticacion real dentro de Spring Security.
 
-## 10. Servicio de autenticacion
+## 12. Reservas con pagos
 
-En `AuthService`, el registro de cliente crea dos cosas: el perfil `Cliente` y el `Usuario`.
+Este fue uno de los cambios mas recientes.
 
-```java
-Cliente cliente = new Cliente(null, request.getNombres(), request.getApellidos(),
-        request.getDocumento(), request.getTelefono(), request.getEmail());
+Antes:
 
-Usuario usuario = new Usuario();
-usuario.setEmail(request.getEmail());
-usuario.setPassword(passwordEncoder.encode(request.getPassword()));
-usuario.setRol(RolUsuario.CLIENTE);
-usuario.setTipoUsuario(TipoUsuario.CLIENTE);
-usuario.setCliente(cliente);
+- La reserva necesitaba un `pagoId`.
+- No era practico crear una reserva pendiente.
 
-return construirRespuesta(usuarioRepository.save(usuario));
-```
+Ahora:
 
-Explicacion:
+- La reserva puede crearse sin pago y quedar `PENDIENTE`.
+- El pago se relaciona con `reserva_id`.
+- Tambien se puede crear reserva y pago en una sola peticion.
 
-- Se crea el cliente con sus datos personales.
-- Se crea el usuario con email y password cifrado.
-- Se asigna el rol `CLIENTE`.
-- Al guardar el usuario tambien se guarda el cliente por la relacion `cascade`.
-- Al final se devuelve el token.
-
-En el login:
-
-```java
-Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
-        .orElseThrow(() -> new IllegalArgumentException("Credenciales invalidas"));
-
-if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
-    throw new IllegalArgumentException("Credenciales invalidas");
-}
-```
-
-Explicacion:
-
-- Busca el usuario por email.
-- Compara la contrasena ingresada con la contrasena cifrada.
-- Si coincide, genera el JWT.
-
-## 11. Ultimo cambio importante: reservas con pago
-
-Antes una reserva necesitaba `pagoId`. Ahora la reserva puede crearse sin pago y quedar `PENDIENTE`. El pago se relaciona despues con `reserva_id`, o se puede crear todo junto.
-
-Nuevo DTO:
+DTO nuevo:
 
 ```java
 public class ReservaConPagoRequest {
@@ -423,46 +381,19 @@ public class ReservaConPagoRequest {
 }
 ```
 
-Sirve para recibir en un solo JSON los datos de reserva y pago.
-
 Endpoint interno:
 
 ```http
 POST /api/reservas/con-pago
-Authorization: Bearer <token-admin-o-cajero>
 ```
 
-Endpoint para cliente:
+Endpoint del cliente:
 
 ```http
 POST /api/reservas/mis-reservas/con-pago
-Authorization: Bearer <token-cliente>
 ```
 
-Ejemplo de cuerpo:
-
-```json
-{
-  "reserva": {
-    "clienteId": 1,
-    "habitacionId": 1,
-    "personalId": 1,
-    "fechaIngreso": "2026-05-10",
-    "fechaSalida": "2026-05-12"
-  },
-  "pago": {
-    "metodo": "TARJETA",
-    "monto": 560.0,
-    "fechaPago": "2026-05-10T10:00:00",
-    "referencia": "POS-001",
-    "estado": "PAGADO",
-    "moneda": "PEN",
-    "observacion": "Pago POS"
-  }
-}
-```
-
-Metodo principal en `ReservaService`:
+Metodo principal:
 
 ```java
 @Transactional
@@ -477,13 +408,13 @@ public Reserva crearConPago(ReservaConPagoRequest request) {
 
 Explicacion:
 
-- `@Transactional`: si falla la reserva o el pago, se revierte toda la operacion.
-- `validarReservaConPago`: valida que venga reserva y pago.
-- `crear`: guarda primero la reserva.
-- `crearParaReserva`: guarda el pago asociado a esa reserva.
-- `actualizarEstadoPorPago`: si el pago esta `PAGADO`, la reserva pasa a `CONFIRMADA`; si no, queda `PENDIENTE`.
+- `@Transactional`: si falla la reserva o el pago, se revierte todo.
+- Primero se crea la reserva.
+- Luego se crea el pago asociado.
+- Si el pago esta `PAGADO`, la reserva queda `CONFIRMADA`.
+- Si no, queda `PENDIENTE`.
 
-## 12. Metodos importantes de pagos
+## 13. Reglas de pago
 
 ```java
 private void completarDatosPorDefecto(Pago pago) {
@@ -497,77 +428,39 @@ private void completarDatosPorDefecto(Pago pago) {
 }
 ```
 
-Explicacion:
+Reglas:
 
-- Si no se envia estado, el pago queda como `PAGADO`.
-- Si no se envia moneda, se usa `PEN`.
+- Si no se envia estado, queda `PAGADO`.
+- Si no se envia moneda, queda `PEN`.
 - Si no se envia fecha de registro, se usa la fecha actual.
 
+Al eliminar un pago asociado:
+
 ```java
-public boolean eliminar(Long id) {
-    Pago pago = pagoRepository.findById(id).orElse(null);
-    if (pago == null) {
-        return false;
-    }
-    if (pago.getReservaId() != null) {
-        pago.setEstado(EstadoPago.ANULADO);
-        pagoRepository.save(pago);
-        return true;
-    }
-    pagoRepository.deleteById(id);
+if (pago.getReservaId() != null) {
+    pago.setEstado(EstadoPago.ANULADO);
+    pagoRepository.save(pago);
     return true;
 }
 ```
 
-Explicacion:
+No se borra fisicamente; se anula para conservar historial.
 
-- Si el pago esta asociado a una reserva, no se borra fisicamente.
-- Se cambia a estado `ANULADO`.
-- Esto conserva el historial de la reserva.
+## 14. Demo recomendada para la exposicion
 
-## 13. Permisos por rol
+Orden sugerido para mostrar en Postman:
 
-Resumen para la exposicion:
+1. Registrar un cliente.
+2. Iniciar sesion.
+3. Copiar el token JWT.
+4. Enviar el token en `Authorization: Bearer <token>`.
+5. Crear una reserva como cliente.
+6. Crear una reserva con pago.
+7. Consultar pagos de una reserva.
+8. Intentar acceder a una ruta sin token para mostrar el `401`.
+9. Intentar acceder con rol incorrecto para mostrar el `403`.
 
-| Rol | Que puede hacer |
-| --- | --- |
-| `CLIENTE` | Ver catalogo, ver sus reservas y crear sus propias reservas. |
-| `CAJERO` | Gestionar clientes, reservas y pagos. |
-| `ADMINISTRADOR` | Acceso administrativo completo. |
-
-Ejemplo en seguridad:
-
-```java
-.requestMatchers(HttpMethod.POST, "/api/reservas/mis-reservas/con-pago").hasRole("CLIENTE")
-.requestMatchers(HttpMethod.POST, "/api/reservas/con-pago").hasAnyRole("ADMINISTRADOR", "CAJERO")
-```
-
-Esto separa el flujo del cliente del flujo interno del hotel.
-
-## 14. Ejemplo de flujo completo para mostrar en exposicion
-
-### Paso 1: registrar cliente
-
-```http
-POST /api/auth/register/cliente
-```
-
-```json
-{
-  "nombres": "Ana",
-  "apellidos": "Torres",
-  "documento": "12345678",
-  "telefono": "999888777",
-  "email": "ana@correo.com",
-  "password": "123456"
-}
-```
-
-### Paso 2: iniciar sesion
-
-```http
-POST /api/auth/login
-```
+Ejemplo de login:
 
 ```json
 {
@@ -576,45 +469,38 @@ POST /api/auth/login
 }
 ```
 
-### Paso 3: usar el token
-
-```http
-Authorization: Bearer <token>
-```
-
-### Paso 4: crear una reserva propia
-
-```http
-POST /api/reservas/mis-reservas
-Authorization: Bearer <token-cliente>
-```
+Ejemplo de reserva con pago:
 
 ```json
 {
-  "habitacionId": 1,
-  "personalId": 1,
-  "fechaIngreso": "2026-05-10",
-  "fechaSalida": "2026-05-12"
+  "reserva": {
+    "habitacionId": 1,
+    "personalId": 1,
+    "fechaIngreso": "2026-05-10",
+    "fechaSalida": "2026-05-12"
+  },
+  "pago": {
+    "metodo": "TARJETA",
+    "monto": 560.0,
+    "fechaPago": "2026-05-10T10:00:00",
+    "referencia": "POS-001",
+    "estado": "PAGADO",
+    "moneda": "PEN"
+  }
 }
 ```
 
-### Paso 5: consultar pagos de una reserva
+## 15. Cierre
 
-```http
-GET /api/reservas/1/pagos
-Authorization: Bearer <token-admin-o-cajero>
-```
+Para cerrar la exposicion:
 
-## 15. Idea corta para explicar en clase
+> En resumen, este avance integra persistencia con PostgreSQL, relaciones con JPA, autenticacion con JWT y autorizacion por roles con Spring Security. Ademas, el flujo de reservas se hizo mas realista porque ahora permite reservas pendientes y pagos asociados a una reserva.
 
-La idea principal del avance es que el backend ya trabaja como una API real de hotel. Ahora los datos se guardan en PostgreSQL usando JPA, las entidades tienen relaciones entre si, los usuarios se autentican con JWT, las rutas estan protegidas por roles y las reservas pueden manejar pagos de forma mas flexible.
+Puntos fuertes del avance:
 
-Antes la aplicacion era mas directa. Ahora tiene capas claras:
-
-- Controlador: recibe la peticion HTTP.
-- Servicio: valida reglas de negocio.
-- Repositorio: consulta o guarda en PostgreSQL.
-- Modelo: representa las tablas y relaciones.
-- Seguridad: valida el token y permisos.
-
-Esta separacion permite que el sistema sea mas ordenado, seguro y facil de ampliar.
+- Backend con base de datos real.
+- Seguridad por token.
+- Roles diferenciados.
+- Relaciones entre entidades.
+- Flujo de reservas y pagos mas flexible.
+- Codigo separado por capas.
