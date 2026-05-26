@@ -4,6 +4,7 @@ import com.dubai.dubai.dto.AuthResponse;
 import com.dubai.dubai.dto.LoginRequest;
 import com.dubai.dubai.dto.RegistroClienteRequest;
 import com.dubai.dubai.dto.RegistroPersonalRequest;
+import com.dubai.dubai.dto.RegistroPersonalResponse;
 import com.dubai.dubai.models.Cliente;
 import com.dubai.dubai.models.Personal;
 import com.dubai.dubai.models.RolPersonal;
@@ -57,7 +58,7 @@ public class AuthService {
     }
 
     @Transactional
-    public AuthResponse registrarPersonal(RegistroPersonalRequest request) {
+    public RegistroPersonalResponse registrarPersonal(RegistroPersonalRequest request) {
         validarEmailDisponible(request.getEmail());
         if (personalRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("El email ya se encuentra registrado como personal");
@@ -71,7 +72,15 @@ public class AuthService {
         usuario.setTipoUsuario(TipoUsuario.PERSONAL);
         usuario.setPersonal(personal);
 
-        return construirRespuesta(usuarioRepository.save(usuario));
+        Usuario guardado = usuarioRepository.save(usuario);
+        return new RegistroPersonalResponse(
+                "Personal registrado correctamente",
+                guardado.getId(),
+                guardado.getPersonal() != null ? guardado.getPersonal().getId() : null,
+                guardado.getEmail(),
+                guardado.getRol(),
+                guardado.getTipoUsuario()
+        );
     }
 
     public AuthResponse login(LoginRequest request) {

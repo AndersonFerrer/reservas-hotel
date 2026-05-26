@@ -4,6 +4,7 @@ import com.dubai.dubai.dto.AuthResponse;
 import com.dubai.dubai.dto.LoginRequest;
 import com.dubai.dubai.dto.RegistroClienteRequest;
 import com.dubai.dubai.dto.RegistroPersonalRequest;
+import com.dubai.dubai.dto.RegistroPersonalResponse;
 import com.dubai.dubai.services.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,7 @@ public class AuthController {
     @PostMapping("/register/personal")
     public ResponseEntity<?> registrarPersonal(@Valid @RequestBody RegistroPersonalRequest request) {
         try {
-            AuthResponse response = authService.registrarPersonal(request);
+            RegistroPersonalResponse response = authService.registrarPersonal(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(error(ex.getMessage()));
