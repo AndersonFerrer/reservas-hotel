@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "8c31a16d-5bd6-4f80-9244-dubai-api-jwt",
     "name": "Dubai API - PostgreSQL JPA JWT",
-    "description": "Coleccion Postman para la API Dubai. Primero ejecuta Login para guardar el token en la variable token; luego usa las rutas protegidas.",
+    "description": "Coleccion Postman para la API Dubai. Primero ejecuta Login para guardar el token en la variable token; luego usa las rutas protegidas. La respuesta de /api/auth/login incluye nombres y apellidos del cliente o personal autenticado.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

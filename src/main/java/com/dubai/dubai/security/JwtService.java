@@ -42,6 +42,14 @@ public class JwtService {
                 .compact();
     }
 
+    /**
+     * Tiempo de vida del token expresado en segundos.
+     * Útil para que la respuesta de login incluya {@code expiresIn} (convención OAuth2).
+     */
+    public long getExpirationSeconds() {
+        return expirationMs / 1000L;
+    }
+
     public boolean tokenValido(String token, String email) {
         String subject = obtenerEmail(token);
         return subject.equals(email) && !estaExpirado(token);

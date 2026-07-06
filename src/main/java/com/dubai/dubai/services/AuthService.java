@@ -102,7 +102,35 @@ public class AuthService {
 
     private AuthResponse construirRespuesta(Usuario usuario) {
         String token = jwtService.generarToken(usuario);
-        return new AuthResponse(token, usuario.getId(), usuario.getEmail(), usuario.getRol(), usuario.getTipoUsuario());
+        long expiresIn = jwtService.getExpirationSeconds();
+
+        String nombres = null;
+        String apellidos = null;
+        if (usuario.getCliente() != null) {
+            nombres = usuario.getCliente().getNombres();
+            apellidos = usuario.getCliente().getApellidos();
+        } else if (usuario.getPersonal() != null) {
+            nombres = usuario.getPersonal().getNombres();
+            apellidos = usuario.getPersonal().getApellidos();
+        }
+
+        AuthResponse.UsuarioResumen resumen = new AuthResponse.UsuarioResumen(
+                usuario.getId(),
+                usuario.getEmail(),
+                nombres,
+                apellidos,
+                construirNombreCompleto(nombres, apellidos),
+                usuario.getRol()
+        );
+
+        return new AuthResponse(token, expiresIn, resumen);
+    }
+
+    private String construirNombreCompleto(String nombres, String apellidos) {
+        String n = nombres == null ? "" : nombres.trim();
+        String a = apellidos == null ? "" : apellidos.trim();
+        String combinado = (n + " " + a).trim();
+        return combinado.isEmpty() ? null : combinado;
     }
 
     private RolUsuario mapearRolPersonal(RolPersonal rolPersonal) {

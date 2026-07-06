@@ -246,10 +246,15 @@ Authorization: Bearer <token>
 {
   "token": "eyJ...",
   "tipo": "Bearer",
-  "usuarioId": 1,
-  "email": "ana@correo.com",
-  "rol": "CLIENTE",
-  "tipoUsuario": "CLIENTE"
+  "expiresIn": 86400,
+  "usuario": {
+    "id": 1,
+    "email": "ana@correo.com",
+    "nombres": "Ana",
+    "apellidos": "Lopez",
+    "nombreCompleto": "Ana Lopez",
+    "rol": "CLIENTE"
+  }
 }
 ```
 
