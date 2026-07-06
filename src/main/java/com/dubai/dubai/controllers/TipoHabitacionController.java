@@ -1,5 +1,6 @@
 package com.dubai.dubai.controllers;
 
+import com.dubai.dubai.dto.ReemplazarCaracteristicasRequest;
 import com.dubai.dubai.models.TipoHabitacion;
 import com.dubai.dubai.services.TipoHabitacionService;
 import org.springframework.http.HttpStatus;
@@ -56,6 +57,23 @@ public class TipoHabitacionController {
             return tipoHabitacionService.eliminar(id) ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
         } catch (IllegalStateException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(error(ex.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}/caracteristicas")
+    public ResponseEntity<?> reemplazarCaracteristicas(@PathVariable Long id,
+                                                       @RequestBody(required = false) ReemplazarCaracteristicasRequest request) {
+        if (request == null) {
+            return ResponseEntity.badRequest().body(error("El cuerpo de la solicitud es obligatorio"));
+        }
+        if (request.getCaracteristicaIds() == null) {
+            return ResponseEntity.badRequest().body(error("El campo caracteristicaIds es obligatorio"));
+        }
+        try {
+            TipoHabitacion actualizada = tipoHabitacionService.reemplazarCaracteristicas(id, request.getCaracteristicaIds());
+            return actualizada != null ? ResponseEntity.ok(actualizada) : ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(error(ex.getMessage()));
         }
     }
 

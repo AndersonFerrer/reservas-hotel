@@ -443,6 +443,34 @@
               ]
             }
           }
+        },
+        {
+          "name": "Reemplazar Caracteristicas (ADMINISTRADOR, CAJERO)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tipos-habitacion/{{tipoHabitacionId}}/caracteristicas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tipos-habitacion",
+                "{{tipoHabitacionId}}",
+                "caracteristicas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"caracteristicaIds\": [1, 4, 7]\n}"
+            }
+          }
         }
       ]
     },

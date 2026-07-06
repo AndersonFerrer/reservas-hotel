@@ -68,6 +68,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/habitacion-caracteristicas").hasAnyRole("ADMINISTRADOR", "CAJERO")
                         .requestMatchers(HttpMethod.PUT, "/api/habitacion-caracteristicas/**").hasAnyRole("ADMINISTRADOR", "CAJERO")
                         .requestMatchers(HttpMethod.GET, "/api/tipos-habitacion", "/api/tipos-habitacion/**").hasAnyRole("ADMINISTRADOR", "CAJERO", "CLIENTE")
+                        .requestMatchers(HttpMethod.PUT, "/api/tipos-habitacion/*/caracteristicas").hasAnyRole("ADMINISTRADOR", "CAJERO")
                         .requestMatchers(HttpMethod.GET, "/api/habitaciones", "/api/habitaciones/**").hasAnyRole("ADMINISTRADOR", "CAJERO", "CLIENTE")
                         .requestMatchers(HttpMethod.POST, "/api/habitaciones").hasAnyRole("ADMINISTRADOR", "CAJERO")
                         .requestMatchers(HttpMethod.PUT, "/api/habitaciones/**").hasAnyRole("ADMINISTRADOR", "CAJERO")
