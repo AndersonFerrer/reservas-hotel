@@ -535,6 +535,33 @@
           }
         },
         {
+          "name": "Listar Habitaciones Disponibles (Publico)",
+          "description": "Lista habitaciones disponibles sin auth. Query params: fechaIngreso (yyyy-MM-dd), fechaSalida (yyyy-MM-dd, estrictamente posterior), huespedes (>= 1). Agrupa por tipo y excluye reservas PENDIENTE/CONFIRMADA en el rango. Validacion rota -> 400 con {\"error\":\"...\"}. Sin disponibilidad -> 200 [].",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/habitaciones/disponibles?fechaIngreso=2026-08-01&fechaSalida=2026-08-05&huespedes=2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "habitaciones",
+                "disponibles"
+              ],
+              "query": [
+                { "key": "fechaIngreso", "value": "2026-08-01" },
+                { "key": "fechaSalida", "value": "2026-08-05" },
+                { "key": "huespedes", "value": "2" }
+              ]
+            }
+          }
+        },
+        {
           "name": "Crear Habitacion (ADMINISTRADOR, CAJERO)",
           "request": {
             "method": "POST",

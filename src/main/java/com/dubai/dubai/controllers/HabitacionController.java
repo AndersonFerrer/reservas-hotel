@@ -1,11 +1,14 @@
 package com.dubai.dubai.controllers;
 
+import com.dubai.dubai.dto.HabitacionDisponibleResponse;
 import com.dubai.dubai.models.Habitacion;
 import com.dubai.dubai.services.HabitacionService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +26,14 @@ public class HabitacionController {
     @GetMapping
     public List<Habitacion> listar() {
         return habitacionService.listar();
+    }
+
+    @GetMapping("/disponibles")
+    public List<HabitacionDisponibleResponse> listarDisponibles(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaIngreso,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaSalida,
+            @RequestParam Integer huespedes) {
+        return habitacionService.listarDisponibles(fechaIngreso, fechaSalida, huespedes);
     }
 
     @GetMapping("/{id}")
