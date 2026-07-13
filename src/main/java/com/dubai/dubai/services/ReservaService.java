@@ -49,6 +49,19 @@ public class ReservaService {
         return reservaRepository.findById(id).orElse(null);
     }
 
+    public Reserva buscarPorIdParaCliente(Long id, String email) {
+        Reserva reserva = reservaRepository.findById(id).orElse(null);
+        if (reserva == null) {
+            return null;
+        }
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("El usuario autenticado no existe"));
+        if (usuario.getCliente() == null || !reserva.getCliente().getId().equals(usuario.getCliente().getId())) {
+            return null;
+        }
+        return reserva;
+    }
+
     public Reserva crear(Reserva reserva) {
         validarReserva(reserva);
         reserva.setCliente(clienteRepository.findById(reserva.getClienteId())

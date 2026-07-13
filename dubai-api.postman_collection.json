@@ -324,8 +324,11 @@
       },
       "item": [
         {
-          "name": "Listar Tipos de Habitacion",
+          "name": "Listar Tipos de Habitacion (Publico)",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -341,8 +344,11 @@
           }
         },
         {
-          "name": "Buscar Tipo de Habitacion por ID",
+          "name": "Buscar Tipo de Habitacion por ID (Publico)",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -488,8 +494,11 @@
       },
       "item": [
         {
-          "name": "Listar Habitaciones",
+          "name": "Listar Habitaciones (Publico)",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -505,8 +514,11 @@
           }
         },
         {
-          "name": "Buscar Habitacion por ID",
+          "name": "Buscar Habitacion por ID (Publico)",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1457,7 +1469,7 @@
           }
         },
         {
-          "name": "Buscar Reserva por ID (ADMINISTRADOR, CAJERO)",
+          "name": "Buscar Reserva por ID (ADMINISTRADOR, CAJERO, CLIENTE)",
           "request": {
             "method": "GET",
             "header": [],

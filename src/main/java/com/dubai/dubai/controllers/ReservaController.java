@@ -74,8 +74,12 @@ public class ReservaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Reserva> buscarPorId(@PathVariable Long id) {
-        Reserva reserva = reservaService.buscarPorId(id);
+    public ResponseEntity<Reserva> buscarPorId(@PathVariable Long id, Authentication authentication) {
+        boolean esCliente = authentication.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_CLIENTE".equals(a.getAuthority()));
+        Reserva reserva = esCliente
+                ? reservaService.buscarPorIdParaCliente(id, authentication.getName())
+                : reservaService.buscarPorId(id);
         return reserva != null ? ResponseEntity.ok(reserva) : ResponseEntity.notFound().build();
     }
 

@@ -6,7 +6,7 @@ Empaquetado en `com.dubai.dubai`, artefacto Maven `dubai`.
 ## Setup commands
 
 - Crear BD local: `CREATE DATABASE dubai;` (PostgreSQL en `localhost:5432`, user/pass `postgres`)
-- Configurar credenciales: copiar `.env.example` a `.env` y editar (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`)
+- Configurar credenciales: copiar `.env.example` a `.env` y editar (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`; opcionalmente `JWT_EXPIRATION_MS` y `CORS_ALLOWED_ORIGINS` para CORS dev)
 - Instalar deps: `./mvnw dependency:resolve` (Maven wrapper incluido; usar `mvnw`/`mvnw.cmd`, no `mvn` global)
 - Levantar API: `./mvnw spring-boot:run` → `http://localhost:8080`
 - Compilar sin tests: `./mvnw -DskipTests compile`
@@ -22,7 +22,7 @@ Empaquetado en `com.dubai.dubai`, artefacto Maven `dubai`.
   - `models/` — entidades JPA y enums (`@Enumerated(EnumType.STRING)`)
   - `dto/` — requests/responses específicos (`AuthResponse`, `LoginRequest`, `RegistroClienteRequest`, `ReservaConPagoRequest`, …)
   - `security/` — `SecurityConfig`, `JwtService`, `JWTAuthorizationFilter`
-  - `config/` — bootstrap no-estándar (ej. `DatabaseCompatibilityConfig` para columnas legacy)
+  - `config/` — bootstrap no-estándar; `DatabaseCompatibilityConfig` ejecuta `ALTER TABLE reservas ALTER COLUMN pago_id DROP NOT NULL` en cada arranque (auto-migración de esquemas legacy), `CorsConfig` aplica CORS desde `app.cors.allowed-origins`
 - `src/main/resources/application.properties` — datasource vía `${ENV_VAR}`, JWT secret/expiración vía env
 - `src/test/java/com/dubai/dubai/controllers/` — tests JUnit 5 + Mockito, 1 archivo por controller
 - `changes/` — bitácora numerada de cambios medianos+ (ver convención abajo)
@@ -46,7 +46,7 @@ Empaquetado en `com.dubai.dubai`, artefacto Maven `dubai`.
 - `@ExtendWith(MockitoExtension.class)`, `@Mock` para servicios, `@InjectMocks` para controllers
 - Ejecutar `./mvnw test` antes de cualquier commit
 - Cobertura mínima esperada: paths felices + al menos un caso de validación por endpoint nuevo
-- No hay tests de integración ni E2E aún; si seagregan, ubicación: `src/test/java/com/dubai/dubai/integration/`
+- Tests en `src/test/java/com/dubai/dubai/controllers/` y `src/test/java/com/dubai/dubai/services/`; no hay tests de integración ni E2E aún; si se agregan, ubicación: `src/test/java/com/dubai/dubai/integration/`
 
 ## PR & commit conventions
 
@@ -127,3 +127,4 @@ Toda mutación a `SecurityConfig.java` debe documentarse con la matriz nueva en 
 - **Conventional commits + `changes/` + Postman** son los tres artefactos que se actualizan juntos. Si falta uno, el PR está incompleto.
 - Si una tarea toca más de un recurso, crear **un solo `changes/XXX-...md`** que cubra todo el cambio (no uno por archivo).
 - Si una tarea es **solo documentación** (README, Postman, cambios/), no requiere código, pero sí commit y changelog si es mediano+.
+- `.harness/` está en `.gitignore` — no commitear archivos de agentes ahí; las definiciones viven fuera del repo.
